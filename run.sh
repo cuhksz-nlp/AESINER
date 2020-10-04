@@ -1,1 +1,0 @@
-python3 train.py --dataset test_dataset --bert_model data/bert-large-cased

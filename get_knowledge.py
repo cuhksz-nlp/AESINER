@@ -53,6 +53,11 @@ class StanfordFeatureProcessor:
                         chunk_tag2count[leaf + '_' + node] += 1
                 chunk_tag2count['ROOT'] = 100
 
+        print('feature stat')
+        print('# of gram: %d' % len(gram2count))
+        print('# of pos: %d' % len(pos_tag2count))
+        print('# of chunk_tag: %d' % len(chunk_tag2count))
+        print('# of dep: %d' % len(dep_tag2count))
         feature2id = {'gram2count': gram2count, 'pos_tag2count': pos_tag2count,
                       'chunk_tag2count': chunk_tag2count, 'dep_tag2count': dep_tag2count}
 
@@ -74,6 +79,11 @@ class StanfordFeatureProcessor:
                 if n > 1:
                     num += 1
             feature_num.append(num)
+        # feature_num.append(len(all_feature2count['gram2count']))
+        # feature_num.append(len(all_feature2count['pos_tag2count']))
+        # feature_num.append(len(all_feature2count['chunk_tag2count']))
+        # feature_num.append(len(all_feature2count['dep_tag2count']))
+        print('max # of features: %d' % max(feature_num))
         return max(feature_num)
 
     def read_features(self, flag):
@@ -93,12 +103,14 @@ class StanfordFeatureProcessor:
                     feature_dict = {}
                     feature_dict['word'] = token['originalText']
                     words.append(token['word'].replace('\xa0',''))
+                    # sentence += token['word']
                     start_index = token['characterOffsetBegin']
                     end_index = token['characterOffsetEnd']
                     feature_dict['char_index'] = [i for i in range(start_index, end_index)]
                     feature_dict['length']= sentence_len+ len(sentence)
                     feature_dict['pos'] = token['pos']
                     sentence_feature.append(feature_dict)
+            # df = df.append([{'word': ' ', 'pos': ' '}], ignore_index=True)
 
                 deparse = sentence['basicDependencies']
                 for dep in deparse:
@@ -168,6 +180,7 @@ def change_word(word):
 
 def filter_useful_feature(feature_list, feature_type):
     ret_list = []
+    # [pos, dep, chunk]
     if feature_type == "all":
         ret_list = [[], [], []]
     for i, sentence in enumerate(feature_list):
@@ -181,10 +194,11 @@ def filter_useful_feature(feature_list, feature_type):
         ret_list[0].append(ret0)
         ret_list[2].append(ret2)
         assert len(ret_list[0][i]) == len(ret_list[1][i]) == len(ret_list[2][i])
+    print("length: ", len(ret_list[0]), len(ret_list[1]), len(ret_list[2]))
     return ret_list
 
 
-def get_feature2count(train_features, test_features=None, dev_features=None):
+def get_feature2count(train_features, test_features=None):
     train_pos_features, train_dep_features, train_chunk_features = train_features
     feature2count = defaultdict(int)
     for sent in train_pos_features:
@@ -231,29 +245,6 @@ def get_feature2count(train_features, test_features=None, dev_features=None):
                 chunk_feature = word + "_" + chunk
                 feature2count[chunk] += 1
                 feature2count[chunk_feature] += 1
-    if dev_features:
-        dev_pos_features, dev_dep_features, dev_chunk_features = dev_features
-        for sent in dev_pos_features:
-            for item in sent:
-                word = item["word"]
-                pos = item["pos"]
-                pos_feature = word + "_" + pos
-                feature2count[pos] += 1
-                feature2count[pos_feature] += 1
-        for sent in dev_dep_features:
-            for item in sent:
-                word = item["word"]
-                dep = item["dep"]
-                dep_feature = word + "_" + dep
-                feature2count[dep] += 1
-                feature2count[dep_feature] += 1
-        for sent in dev_chunk_features:
-            for item in sent:
-                word = item["word"]
-                chunk = item["chunk"]
-                chunk_feature = word + "_" + chunk
-                feature2count[chunk] += 1
-                feature2count[chunk_feature] += 1
     return feature2count
 
 
@@ -261,16 +252,18 @@ def generate_knowledge_api(data_dir, feature_type="all", level="all"):
     sfp = StanfordFeatureProcessor(data_dir)
 
     train_feature_data = sfp.read_features(flag="train")
+    print("len_train: ", len(train_feature_data))
     test_feature_data = sfp.read_features(flag="test")
-    dev_feature_data = sfp.read_features(flag="dev")
-
+    print("len_test: ", len(test_feature_data))
     train_feature_data = filter_useful_feature(train_feature_data, feature_type="all")
     test_feature_data = filter_useful_feature(test_feature_data, feature_type="all")
-    dev_feature_data = filter_useful_feature(dev_feature_data, feature_type="all")
 
     assert level in ["all", "train"]
 
-    feature2count = get_feature2count(train_feature_data, test_feature_data, dev_feature_data)
+    if level == "train":
+        feature2count = get_feature2count(train_feature_data)
+    elif level == "all":
+        feature2count = get_feature2count(train_feature_data, test_feature_data)
 
     feature2id = {"<PAD>": 0}
     id2feature = {0: "<PAD>"}
@@ -281,4 +274,4 @@ def generate_knowledge_api(data_dir, feature_type="all", level="all"):
         id2feature[index] = key
         index += 1
 
-    return train_feature_data, test_feature_data, dev_feature_data, feature2count, feature2id, id2feature
+    return train_feature_data, test_feature_data, feature2count, feature2id, id2feature

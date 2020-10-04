@@ -1,7 +1,13 @@
-from support import Callback, Tester, DataSet
+
+from fastNLP import Callback, Tester, DataSet
 
 
 class EvaluateCallback(Callback):
+    """
+    通过使用该Callback可以使得Trainer在evaluate dev之外还可以evaluate其它数据集，比如测试集。每一次验证dev之前都会先验证EvaluateCallback
+    中的数据。
+    """
+
     def __init__(self, data=None, tester=None,
                  use_knowledge=False,
                  knowledge_type=None,
@@ -11,8 +17,17 @@ class EvaluateCallback(Callback):
                  test_feature_data=None,
                  feature2count=None,
                  feature2id=None,
-                 id2feature=None
+                 id2feature=None,
+                 use_zen=False,
+                 zen_model=None,
+                 zen_dataset=None
                  ):
+        """
+        :param ~fastNLP.DataSet,Dict[~fastNLP.DataSet] data: 传入DataSet对象，会使用Trainer中的metric对数据进行验证。如果需要传入多个
+            DataSet请通过dict的方式传入。
+        :param ~fastNLP.Tester,Dict[~fastNLP.DataSet] tester: Tester对象, 通过使用Tester对象，可以使得验证的metric与Trainer中
+            的metric不一样。
+        """
         super().__init__()
         self.datasets = {}
         self.testers = {}
@@ -30,6 +45,9 @@ class EvaluateCallback(Callback):
         self.feature2count = feature2count
         self.feature2id = feature2id
         self.id2feature = id2feature
+        self.use_zen = use_zen
+        self.zen_model = zen_model
+        self.zen_dataset = zen_dataset
 
         if tester is not None:
             if isinstance(tester, dict):
@@ -70,7 +88,10 @@ class EvaluateCallback(Callback):
                                 test_feature_data=self.test_feature_data,
                                 feature2count=self.feature2count,
                                 feature2id=self.feature2id,
-                                id2feature=self.id2feature
+                                id2feature=self.id2feature,
+                                use_zen=self.use_zen,
+                                zen_model=self.zen_model,
+                                zen_dataset=self.zen_dataset
                                 )
                 self.testers[key] = tester
 
@@ -102,6 +123,8 @@ class EvaluateCallback(Callback):
 
 
 def _check_eval_results(metrics, metric_key=None):
+    # metrics: tester返回的结果
+    # metric_key: 一个用来做筛选的指标，来自Trainer的初始化
     if isinstance(metrics, tuple):
         loss, metrics = metrics
 
@@ -111,6 +134,7 @@ def _check_eval_results(metrics, metric_key=None):
         if metric_key is None:
             indicator_val, indicator = list(metric_dict.values())[0], list(metric_dict.keys())[0]
         else:
+            # metric_key is set
             if metric_key not in metric_dict:
                 raise RuntimeError(f"metric key {metric_key} not found in {metric_dict}")
             indicator_val = metric_dict[metric_key]
