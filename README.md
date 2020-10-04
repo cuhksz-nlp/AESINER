@@ -1,6 +1,6 @@
 # AESINER
 
-This is the implementation of [Improving Named Entity Recognition with Attentive Ensemble of Syntactic Information]() at EMNLP2020.
+This is the implementation of [Improving Named Entity Recognition with Attentive Ensemble of Syntactic Information]() at Findings of EMNLP-2020.
 
 ## Citations
 
