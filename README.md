@@ -27,7 +27,7 @@ If you use or extend our work, please cite our paper at EMNLP2020.
 - `fastNLP==0.5`
 
 
-## Downloading Pre-trained Embeddings
+## Download Pre-trained Embeddings
 
 For English NER, we use three types of word embeddings, namely GloVe, ELMo and BERT. Among them, GloVe and ELMo can be automatically 
 downloaded by running the script `run_en.py`; bert can be downloaded pre-trained BERT-large-cased 
