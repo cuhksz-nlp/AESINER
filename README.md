@@ -41,7 +41,7 @@ All pretrained embeddings should be placed in `./data/`
 
 ## Download AESINER
 
-You can download the models we trained for each dataset from [here](). 
+You can download the models we trained for each dataset from [here](data/aesiner.md). 
 
 ## Run on sample data
 
