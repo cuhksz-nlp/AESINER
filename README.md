@@ -46,3 +46,14 @@ You can download the models we trained for each dataset from [here](data/aesiner
 ## Run on sample data
 
 Run `run_en.py` to train a model on the small sample data under the `sample_data` directory.
+
+## Datasets
+
+We use three English datasets (ON5e, WN16, WN17) and three Chinese datasets (ON4c, RE, WE) in our paper. 
+
+For all datasets, you need to obtain the official data first, then put the data folder under the `data` directory. 
+
+## Training
+
+You can find the command lines to train models on a specific dataset in `run_en.py` for English datasets and `run_cn.py` for Chinese datasets. 
+

@@ -1,7 +1,5 @@
 import os
 
-# dataset = "ontonote4"
-# dataset = "resume"
 dataset = "weibo"
 seed = 14
 
