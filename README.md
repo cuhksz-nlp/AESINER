@@ -39,6 +39,10 @@ Tencent Embedding can be downloaded from [here](https://ai.tencent.com/ailab/nlp
 
 All pretrained embeddings should be placed in `./data/`
 
+## Download AESINER
+
+You can download the models we trained for each dataset from [here](). 
+
 ## Run on sample data
 
 Run `run_en.py` to train a model on the small sample data under the `sample_data` directory.
