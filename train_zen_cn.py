@@ -150,7 +150,6 @@ def load_data():
     train_feature_data, test_feature_data, feature2count, feature2id, id2feature = generate_knowledge_api(
             os.path.join("data", dataset), "all", args.feature_level
         )
-    # print("feature_num: ", len(feature2id))
 
     embed = StaticEmbedding(data_bundle.get_vocab('chars'),
                             model_dir_or_name='data/gigaword_chn.all.a2b.uni.ite50.vec',
@@ -233,14 +232,6 @@ model = AESI(tag_vocab=data_bundle.get_vocab('target'), embed=embed, num_layers=
               knowledge_type=args.knowledge_type,
               use_zen=args.zen_model!=""
               )
-
-# for name, param in model.named_parameters():
-#     if param.requires_grad:
-#         print(name, param.numel())
-
-# print("Parameter Num: ", sum(param.numel() for param in model.parameters() if param.requires_grad))
-# print(model)
-# exit()
 
 if args.optim_type == 'sgd':
     optimizer = optim.SGD(model.parameters(), lr=lr, momentum=0.9)

@@ -104,10 +104,9 @@ def print_time():
     now = datetime.now()
     return "-".join([str(now.year), str(now.month), str(now.day), str(now.hour), str(now.minute), str(now.second)])
 
-
 name = 'caches/{}_{}_{}_{}_{}_{}_{}_{}_{}.pkl'.format(dataset, model_type, encoding_type, char_type,
                                                      normalize_embed, knowledge_type, pos_th, dep_th, chunk_th)
-# save_path = "ckpt/elmo_{}_{}_{}_{}.pth".format(dataset, model_type, knowledge_type, print_time())
+# save_path = "ckpt/{}_{}_{}_{}.pth".format(dataset, model_type, knowledge_type, print_time())
 save_path = None
 
 logPath = args.log
