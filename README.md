@@ -51,7 +51,21 @@ Run `run_en.py` to train a model on the small sample data under the `sample_data
 
 We use three English datasets (ON5e, WN16, WN17) and three Chinese datasets (ON4c, RE, WE) in our paper. 
 
-For all datasets, you need to obtain the official data first, then put the data folder under the `data` directory. 
+For `ON5e` and `ON4c`, you need to obtain the official data first, and then put the data in `data/ON5e` and `data/ON4c`, respectively.
+
+For `WN16`, you can download the dataset from [here](https://github.com/aritter/twitter_nlp/tree/master/data/annotated/wnut16/data) and then put the `train`, `dev` and  `test` files in `data/W16`.
+
+For `WN17`, you can download the dataset from [here](https://github.com/gaguilar/NER-WNUT17/tree/master/data) and then put the `emerging.train.conll`, `emerging.dev.conll` and `emerging.test.conll` files in `data/W17`. 
+
+For `RE`, you can download the dataest from [here](https://github.com/jiesutd/LatticeLSTM/tree/master/ResumeNER) and then put the `train.char.bmes`, `dev.char.bmes` and `test.char.bmes` files in `data/RE`.
+
+For `WE`, you can download the dataset from [here](https://github.com/hltcoe/golden-horse/tree/master/data) and then put the `weiboNER.conll.train`, `weiboNER.conll.dev` and `weiboNER.conll.test` files in `data/WE`.
+
+All the data files should be named as `train.txt`, `test.txt` and `dev.txt` in corresponding dictionaries. 
+
+## Data Preprocess
+
+You can run the script `data_helper.py` to get the syntactic information needed to run our model, you can run the script by `python data_helper.py --dataset $DATASET_NAME$`
 
 ## Training
 
