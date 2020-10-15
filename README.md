@@ -59,7 +59,7 @@ For `WN17`, you can download the dataset from [here](https://github.com/gaguilar
 
 For `RE`, you can download the dataest from [here](https://github.com/jiesutd/LatticeLSTM/tree/master/ResumeNER) and then put the `train.char.bmes`, `dev.char.bmes` and `test.char.bmes` files in `data/RE`.
 
-For `WE`, you can download the dataset from [here](https://github.com/hltcoe/golden-horse/tree/master/data) and then put the `weiboNER.conll.train`, `weiboNER.conll.dev` and `weiboNER.conll.test` files in `data/WE`.
+For `WE`, you can download the dataset from [here](https://github.com/hltcoe/golden-horse/tree/master/data) and then put the `weiboNER_2nd_conll.train`, `weiboNER_2nd_conll.dev` and `weiboNER_2nd_conll.test` files in `data/WE`.
 
 All the data files should be named as `train.txt`, `test.txt` and `dev.txt` in corresponding dictionaries. 
 
