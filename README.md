@@ -35,7 +35,7 @@ from [Google](https://github.com/google-research/bert) or from [HuggingFace](htt
 If you download it from Google, you need to convert the model from TensorFlow version to PyTorch version.
 
 For Chinese NER, we also use three types of word embeddings, namely Giga, Tencent Embedding and ZEN. Among them, Giga can be downloaded from [here](https://github.com/jiesutd/LatticeLSTM), 
-Tencent Embedding can be downloaded from [here](https://ai.tencent.com/ailab/nlp/embedding.html), ZEN can be downloaded from [here](https://github.com/sinovation/ZEN)
+Tencent Embedding can be downloaded from [here](https://ai.tencent.com/ailab/nlp/zh/embedding.html), ZEN can be downloaded from [here](https://github.com/sinovation/ZEN)
 
 All pretrained embeddings should be placed in `./data/`
 
