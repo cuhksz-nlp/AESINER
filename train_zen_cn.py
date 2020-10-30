@@ -67,8 +67,8 @@ setup_seed(args.seed)
 
 dataset = args.dataset
 if dataset == 'resume':
-    n_heads = 4
-    head_dims = 64
+    n_heads = 2
+    head_dims = 128
     num_layers = 2
     lr = 0.0007
     attn_type = 'adatrans'
