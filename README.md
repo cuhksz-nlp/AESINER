@@ -65,7 +65,9 @@ All the data files should be named as `train.txt`, `test.txt` and `dev.txt` in c
 
 ## Data Preprocess
 
-You can run the script `data_helper.py` to get the syntactic information needed to run our model, you can run the script by `python data_helper.py --dataset $DATASET_NAME$`
+After downloading `Tencent Embedding`, you need to extract the unigrams according to `python data_process.py --file_path=${PATH_TO_TENCENT_EMBEDDING}$`
+
+For all syntactic information, you can run the script `data_helper.py` to get the syntactic information needed to run our model, you can run the script by `python data_helper.py --dataset $DATASET_NAME$`
 
 ## Training
 
