@@ -26,6 +26,9 @@ If you use or extend our work, please cite our paper at EMNLP2020.
 - `tqdm==4.38.0`
 - `fastNLP==0.5`
 
+## Download Stanford CoreNLP
+
+You can get the Stanford CoreNLP toolkits from the script `stanford.sh`
 
 ## Download Pre-trained Embeddings
 
@@ -62,6 +65,8 @@ For `RE`, you can download the dataest from [here](https://github.com/jiesutd/La
 For `WE`, you can download the dataset from [here](https://github.com/hltcoe/golden-horse/tree/master/data) and then put the `weiboNER_2nd_conll.train`, `weiboNER_2nd_conll.dev` and `weiboNER_2nd_conll.test` files in `data/WE`.
 
 All the data files should be named as `train.txt`, `test.txt` and `dev.txt` in corresponding dictionaries. 
+
+For all datasets, you can run the script `data_preprocess.py` with `python data_preprocess.py --dataset ${dataset}$ --data_dir ${data_dir}$` to preprocess the aforementioned datasets automatically.
 
 ## Data Preprocess
 

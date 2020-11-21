@@ -1,4 +1,4 @@
-from models.AESI import AESI
+from models.TENER import TENER
 from fastNLP import cache_results
 from fastNLP import Trainer, GradientClipCallback, WarmupCallback
 from torch import optim
@@ -26,7 +26,7 @@ else:
     device = "cpu"
 
 parser = argparse.ArgumentParser()
-parser.add_argument('--dataset', type=str, default='resume', choices=['weibo', 'resume', 'ontonote4', 'msra'])
+parser.add_argument('--dataset', type=str)
 parser.add_argument('--seed', type=int, default=14)
 parser.add_argument('--log', type=str, default=None)
 parser.add_argument('--bert_model', type=str, required=True)
@@ -66,30 +66,23 @@ save_path = None
 setup_seed(args.seed)
 
 dataset = args.dataset
-if dataset == 'resume':
+if dataset == 'RE':
     n_heads = 2
     head_dims = 128
     num_layers = 2
     lr = 0.0007
     attn_type = 'adatrans'
     n_epochs = 50
-elif dataset == 'weibo':
+elif dataset == 'WE':
     n_heads = 4
     head_dims = 256
     num_layers = 1
     lr = 0.001
     attn_type = 'adatrans'
     n_epochs = 100
-elif dataset == 'ontonote4':
+elif dataset == 'ON4c':
     n_heads = 4
     head_dims = 48
-    num_layers = 2
-    lr = 0.0007
-    attn_type = 'adatrans'
-    n_epochs = 100
-elif dataset == 'msra':
-    n_heads = 6
-    head_dims = 80
     num_layers = 2
     lr = 0.0007
     attn_type = 'adatrans'
@@ -124,30 +117,15 @@ def write_log(sent):
 
 @cache_results(name, _refresh=False)
 def load_data():
-    # 替换路径
-    if dataset == 'ontonote4':
-        paths = {'train':'data/ontonote4/train.txt',
-                 "dev":'data/ontonote4/test.txt',
-                 "test":'data/ontonote4/test.txt'}
-        min_freq = 2
-    elif dataset == 'weibo':
-        paths = {'train': 'data/weibo/train.txt',
-                 'dev':'data/weibo/test.txt',
-                 'test':'data/weibo/test.txt'}
-        min_freq = 1
-    elif dataset == 'resume':
-        paths = {'train': 'data/resume/train.txt',
-                 'dev':'data/resume/test.txt',
-                 'test':'data/resume/test.txt'}
-        min_freq = 1
-    elif dataset == 'msra':
-        paths = {'train': 'data/msra/train.txt',
-                 'dev': 'data/msra/test.txt',
-                 'test':'data/msra/test.txt'}
-        min_freq = 2
+    paths = {
+        'train':'data/{}/train.txt'.format(dataset),
+        "dev":'data/{}/dev.txt'.format(dataset),
+        "test":'data/{}/test.txt'.format(dataset)
+    }
+    min_freq = 1
     data_bundle = CNNERPipe(bigrams=True, encoding_type=encoding_type).process_from_file(paths)
 
-    train_feature_data, test_feature_data, feature2count, feature2id, id2feature = generate_knowledge_api(
+    train_feature_data, dev_feature_data, test_feature_data, feature2count, feature2id, id2feature = generate_knowledge_api(
             os.path.join("data", dataset), "all", args.feature_level
         )
 
@@ -170,15 +148,13 @@ def load_data():
 
     embed = StackEmbedding([embed, tencent_embed, bert_embed], dropout=0, word_dropout=0.02)
 
-    return data_bundle, embed, bi_embed, train_feature_data, test_feature_data, feature2count, feature2id, id2feature
+    return data_bundle, embed, bi_embed, train_feature_data, dev_feature_data, test_feature_data, feature2count, feature2id, id2feature
 
-data_bundle, embed, bi_embed, train_feature_data, test_feature_data, feature2count, feature2id, id2feature = load_data()
+data_bundle, embed, bi_embed, train_feature_data, dev_feature_data, test_feature_data, feature2count, feature2id, id2feature = load_data()
 
 train_data = list(data_bundle.get_dataset("train"))
+dev_data = list(data_bundle.get_dataset("dev"))
 test_data = list(data_bundle.get_dataset("test"))
-
-print(len(train_data), len(train_feature_data[0]), len(train_feature_data[1]), len(train_feature_data[2]))
-print(len(test_data), len(test_feature_data[0]), len(test_feature_data[1]), len(test_feature_data[2]))
 
 vocab_size = len(data_bundle.get_vocab('chars'))
 feature_vocab_size = len(feature2id)
@@ -206,12 +182,13 @@ if args.zen_model:
     max_seq_len = 512
 
     zen_train_dataset = load_examples(data_dir, max_seq_len, tokenizer, ngram_dict, processor, label_list, mode="train")
+    zen_dev_dataset = load_examples(data_dir, max_seq_len, tokenizer, ngram_dict, processor, label_list, mode="dev")
     zen_test_dataset = load_examples(data_dir, max_seq_len, tokenizer, ngram_dict, processor, label_list, mode="test")
 
     print("[Info] Zen Mode, Zen dataset loaded ...")
 
 
-model = AESI(tag_vocab=data_bundle.get_vocab('target'), embed=embed, num_layers=num_layers,
+model = TENER(tag_vocab=data_bundle.get_vocab('target'), embed=embed, num_layers=num_layers,
               d_model=d_model, n_head=n_heads,
               feedforward_dim=dim_feedforward, dropout=args.trans_dropout,
               after_norm=after_norm, attn_type=attn_type,
@@ -261,7 +238,7 @@ if warmup_steps>0:
 callbacks.extend([clip_callback, evaluate_callback])
 
 trainer = Trainer(data_bundle.get_dataset('train'), model, optimizer, batch_size=batch_size, sampler=BucketSampler(),
-                  num_workers=2, n_epochs=80, dev_data=data_bundle.get_dataset('test'),
+                  num_workers=2, n_epochs=100, dev_data=data_bundle.get_dataset('dev'),
                   metrics=SpanFPreRecMetric(tag_vocab=data_bundle.get_vocab('target'), encoding_type=encoding_type),
                   dev_batch_size=batch_size, callbacks=callbacks, device=device, test_use_tqdm=False,
                   use_tqdm=True, print_every=300, save_path=save_path,
@@ -271,7 +248,7 @@ trainer = Trainer(data_bundle.get_dataset('train'), model, optimizer, batch_size
                   dep_th=args.dep_th,
                   chunk_th=args.chunk_th,
                   train_feature_data=train_feature_data,
-                  test_feature_data=test_feature_data,
+                  test_feature_data=dev_feature_data,
                   feature2count=feature2count,
                   feature2id=feature2id,
                   id2feature=id2feature,
@@ -279,7 +256,7 @@ trainer = Trainer(data_bundle.get_dataset('train'), model, optimizer, batch_size
                   use_zen=args.zen_model!="",
                   zen_model=zen_model,
                   zen_train_dataset=zen_train_dataset,
-                  zen_dev_dataset=zen_test_dataset
+                  zen_dev_dataset=zen_dev_dataset
                   )
 
 trainer.train(load_best_model=False)

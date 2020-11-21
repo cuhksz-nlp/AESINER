@@ -1,4 +1,4 @@
-from models.AESI import AESI
+from models.TENER import TENER
 from fastNLP import cache_results
 from fastNLP import Trainer, GradientClipCallback, WarmupCallback
 from torch import optim
@@ -28,8 +28,7 @@ else:
 
 parser = argparse.ArgumentParser()
 
-parser.add_argument('--dataset', type=str,
-                    default='en-ontonotes')
+parser.add_argument('--dataset', type=str)
 parser.add_argument('--seed', type=int, default=14)
 parser.add_argument('--log', type=str, default=None)
 parser.add_argument('--bert_model', type=str, required=True)
@@ -49,7 +48,7 @@ def setup_seed(seed):
 setup_seed(args.seed)
 
 dataset = args.dataset
-if dataset == 'en-ontonotes':
+if dataset == 'ON5e':
     n_heads = 10
     head_dims = 96
     num_layers = 2
@@ -122,19 +121,23 @@ def write_log(sent):
 
 @cache_results(name, _refresh=False)
 def load_data():
-    if dataset == 'en-ontonotes':
-        paths = 'data/en-ontonotes/english'
+    if dataset == 'ON5e':
+        paths = 'data/ON5e/english'
         data = OntoNotesNERPipe(encoding_type=encoding_type).process_from_file(paths)
     else:
-        paths = {"train": "data/{}/train.txt".format(dataset), "test": "data/{}/test.txt".format(dataset)}
+        paths = {
+            "train": "data/{}/train.txt".format(dataset),
+            "dev": "data/{}/dev.txt".format(dataset),
+            "test": "data/{}/test.txt".format(dataset)
+        }
         data = ENNERPipe(encoding_type=encoding_type).process_from_file(paths)
 
     if knowledge:
-        train_feature_data, test_feature_data, feature2count, feature2id, id2feature = generate_knowledge_api(
+        train_feature_data, dev_feature_data, test_feature_data, feature2count, feature2id, id2feature = generate_knowledge_api(
             os.path.join("data", dataset), "all", feature_level
         )
     else:
-        train_feature_data, test_feature_data, feature2count, feature2id, id2feature = None, None, None, None, None
+        train_feature_data, dev_feature_data, test_feature_data, feature2count, feature2id, id2feature = None, None, None, None, None, None
 
     char_embed = TransformerCharEmbed(vocab=data.get_vocab('words'), embed_size=embed_size, char_emb_size=embed_size, word_dropout=0,
                                       dropout=0.3, pool_method='max', activation='relu',
@@ -158,15 +161,15 @@ def load_data():
 
     embed = StackEmbedding([embed, bert_embed, word_embed, char_embed], dropout=0, word_dropout=0.02)
 
-    return data, embed, train_feature_data, test_feature_data, feature2count, feature2id, id2feature
+    return data, embed, train_feature_data, dev_feature_data, test_feature_data, feature2count, feature2id, id2feature
 
 
-data_bundle, embed, train_feature_data, test_feature_data, feature2count, feature2id, id2feature = load_data()
+data_bundle, embed, train_feature_data, dev_feature_data, test_feature_data, feature2count, feature2id, id2feature = load_data()
 
 vocab_size = len(data_bundle.get_vocab('chars'))
 feature_vocab_size = len(feature2id)
 
-model = AESI(tag_vocab=data_bundle.get_vocab('target'), embed=embed, num_layers=num_layers,
+model = TENER(tag_vocab=data_bundle.get_vocab('target'), embed=embed, num_layers=num_layers,
               d_model=d_model, n_head=n_heads,
               feedforward_dim=dim_feedforward, dropout=trans_dropout,
               after_norm=after_norm, attn_type=attn_type,
@@ -212,7 +215,7 @@ if warmup_steps > 0:
 callbacks.extend([clip_callback, evaluate_callback])
 
 trainer = Trainer(data_bundle.get_dataset('train'), model, optimizer, batch_size=batch_size, sampler=BucketSampler(),
-                  num_workers=0, n_epochs=100, dev_data=data_bundle.get_dataset('test'),
+                  num_workers=0, n_epochs=100, dev_data=data_bundle.get_dataset('dev'),
                   metrics=SpanFPreRecMetric(tag_vocab=data_bundle.get_vocab('target'), encoding_type=encoding_type),
                   dev_batch_size=batch_size, callbacks=callbacks, device=device, test_use_tqdm=False,
                   use_tqdm=True, print_every=300, save_path=save_path,
@@ -222,7 +225,7 @@ trainer = Trainer(data_bundle.get_dataset('train'), model, optimizer, batch_size
                   dep_th=dep_th,
                   chunk_th=chunk_th,
                   train_feature_data=train_feature_data,
-                  test_feature_data=test_feature_data,
+                  test_feature_data=dev_feature_data,
                   feature2count=feature2count,
                   feature2id=feature2id,
                   id2feature=id2feature,

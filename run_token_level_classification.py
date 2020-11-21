@@ -50,6 +50,8 @@ def set_seed(args):
 def load_examples(data_dir, max_seq_len, tokenizer, ngram_dict, processor, label_list, mode):
     if mode == "train":
         examples = processor.get_train_examples(data_dir)
+    elif mode == "dev":
+        examples = processor.get_dev_examples(data_dir)
     elif mode == "test":
         examples = processor.get_test_examples(data_dir)
     features = convert_examples_to_features(examples, label_list, max_seq_len, tokenizer, ngram_dict)

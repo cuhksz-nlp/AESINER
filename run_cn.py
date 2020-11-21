@@ -1,6 +1,6 @@
 import os
 
-dataset = "weibo"
+dataset = "WB"
 seed = 14
 
 # --zen_model: the path of the pre-trained ZEN-base model

@@ -198,7 +198,7 @@ def filter_useful_feature(feature_list, feature_type):
     return ret_list
 
 
-def get_feature2count(train_features, test_features=None):
+def get_feature2count(train_features, dev_features=None, test_features=None):
     train_pos_features, train_dep_features, train_chunk_features = train_features
     feature2count = defaultdict(int)
     for sent in train_pos_features:
@@ -222,6 +222,29 @@ def get_feature2count(train_features, test_features=None):
             chunk_feature = word + "_" + chunk
             feature2count[chunk] += 1
             feature2count[chunk_feature] += 1
+    if dev_features:
+        dev_pos_features, dev_dep_features, dev_chunk_features = dev_features
+        for sent in dev_pos_features:
+            for item in sent:
+                word = item["word"]
+                pos = item["pos"]
+                pos_feature = word + "_" + pos
+                feature2count[pos] += 1
+                feature2count[pos_feature] += 1
+        for sent in dev_dep_features:
+            for item in sent:
+                word = item["word"]
+                dep = item["dep"]
+                dep_feature = word + "_" + dep
+                feature2count[dep] += 1
+                feature2count[dep_feature] += 1
+        for sent in dev_chunk_features:
+            for item in sent:
+                word = item["word"]
+                chunk = item["chunk"]
+                chunk_feature = word + "_" + chunk
+                feature2count[chunk] += 1
+                feature2count[chunk_feature] += 1
     if test_features:
         test_pos_features, test_dep_features, test_chunk_features = test_features
         for sent in test_pos_features:
@@ -253,9 +276,12 @@ def generate_knowledge_api(data_dir, feature_type="all", level="all"):
 
     train_feature_data = sfp.read_features(flag="train")
     print("len_train: ", len(train_feature_data))
+    dev_feature_data = sfp.read_features(flag="dev")
+    print("len_dev: ", len(dev_feature_data))
     test_feature_data = sfp.read_features(flag="test")
     print("len_test: ", len(test_feature_data))
     train_feature_data = filter_useful_feature(train_feature_data, feature_type="all")
+    dev_feature_data = filter_useful_feature(dev_feature_data, feature_type="all")
     test_feature_data = filter_useful_feature(test_feature_data, feature_type="all")
 
     assert level in ["all", "train"]
@@ -263,7 +289,7 @@ def generate_knowledge_api(data_dir, feature_type="all", level="all"):
     if level == "train":
         feature2count = get_feature2count(train_feature_data)
     elif level == "all":
-        feature2count = get_feature2count(train_feature_data, test_feature_data)
+        feature2count = get_feature2count(train_feature_data, dev_feature_data, test_feature_data)
 
     feature2id = {"<PAD>": 0}
     id2feature = {0: "<PAD>"}
@@ -274,4 +300,4 @@ def generate_knowledge_api(data_dir, feature_type="all", level="all"):
         id2feature[index] = key
         index += 1
 
-    return train_feature_data, test_feature_data, feature2count, feature2id, id2feature
+    return train_feature_data, dev_feature_data, test_feature_data, feature2count, feature2id, id2feature
