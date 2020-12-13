@@ -743,6 +743,8 @@ class Trainer(object):
                         ret.append(self.feature2id[word_feature])
                     else:
                         ret.append(self.feature2id[feature])
+                if len(ret) > seq_len:
+                    ret = ret[:seq_len]
                 ret += [0] * (seq_len - len(ret))
                 ret_list[i].append(ret)
             ret_list[i] = torch.tensor(ret_list[i])
