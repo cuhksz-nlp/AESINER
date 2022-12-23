@@ -2,6 +2,13 @@
 
 This is the implementation of [Improving Named Entity Recognition with Attentive Ensemble of Syntactic Information](https://arxiv.org/pdf/2010.15466.pdf) at Findings of EMNLP-2020.
 
+
+**Visit our [homepage](https://github.com/synlp/.github) to find more our recent research and softwares for NLP (e.g., pre-trained LM, POS tagging, NER, sentiment analysis, relation extraction, datasets, etc.).**
+
+## Upgrades of AESINER
+
+We are improving our AESINER. For updates, please visit [HERE](https://github.com/synlp/AESINER).
+
 ## Citations
 
 If you use or extend our work, please cite our paper at EMNLP2020.
